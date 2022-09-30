@@ -19,3 +19,7 @@ Setup Github Pages to use the newly created gh-pages branch
 Wait until the deployment is complete:
 
 ![grafik](https://user-images.githubusercontent.com/3384572/193328599-078e93e2-a16f-4dac-a616-10e774682ea5.png)
+
+Go to settings again to find the url of the new page
+
+![grafik](https://user-images.githubusercontent.com/3384572/193328832-b87b0ef9-3cba-4e5b-9948-b4f9a2c8e1ac.png)
