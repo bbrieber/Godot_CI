@@ -1,40 +1,100 @@
-name: "godot-ci export"
-on: push
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Create Release
 
 env:
-  GODOT_VERSION: 3.5.1
-  EXPORT_NAME: project
+  GodotProjectName: GodotProject
+  ExportLinux: true
+  ExportWindows: true
+  ExportWeb: true
 
 jobs:
-  export-web:
-    name: Web Export
-    runs-on: ubuntu-20.04
-    container:
-      image: barichello/godot-ci:3.5.1
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v2
+      - name: Build for Windows
+        id: build_win
+        if: ${{ env.ExportWindows }}
+        uses: bbrieber/godot_ci_image@dcf2a5fba3a5f0b04f36927b9c178d779574662f
         with:
-          lfs: true
-      - name: Setup
-        run: |
-          mkdir -v -p ~/.local/share/godot/templates
-          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
-      - name: Web Build
-        run: |
-          mkdir -v -p build/web
-          cd $EXPORT_NAME
-          godot -v --export "HTML5" ../build/web/index.html
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v1
+          build-config: 'WindowsDesktop'
+      - name: Build for Linux
+        id: build_linux
+        if: ${{ env.ExportLinux }}
+        uses: bbrieber/godot_ci_image@dcf2a5fba3a5f0b04f36927b9c178d779574662f
         with:
-          name: web
-          path: build/web
-      - name: Install rsync 📚
-        run: |
-          apt-get update && apt-get install -y rsync
-      - name: Deploy to GitHub Pages 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v4
+          build-config: 'Linux'
+      - name: Build for Web
+        id: build_web
+        if: ${{ env.ExportWeb }}
+        uses: bbrieber/godot_ci_image@dcf2a5fba3a5f0b04f36927b9c178d779574662f
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: build/web # The folder the action should deploy.
+          build-config: 'Web'
+      - name: Zip Linux Folder
+        if: ${{ env.ExportLinux }}
+        run: |
+          cd export/linux
+          zip -r ${{ env.GodotProjectName }}_linux.zip .
+          cd ../..
+      - name: Zip Windows Folder
+        if: ${{ env.ExportWindows }}
+        run: |
+          cd export/win
+          zip -r ${{ env.GodotProjectName }}_win.zip .
+          cd ../..
+      - name: Zip Web Folder
+        if: ${{ env.ExportWeb }}
+        run: |
+          cd export/web
+          zip -r ${{ env.GodotProjectName }}_web.zip .
+          cd ../..
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset Linux
+        id: upload-release-asset-linux
+        if: ${{ env.ExportLinux }}
+        uses: actions/upload-release-asset@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: export/linux/${{ env.GodotProjectName }}_linux.zip
+          asset_name: ${{ env.GodotProjectName }}_linux-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
+      - name: Upload Release Asset Windows
+        id: upload-release-asset-win
+        if: ${{ env.ExportWindows }}
+        uses: actions/upload-release-asset@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: export/win/${{ env.GodotProjectName }}_win.zip
+          asset_name: ${{ env.GodotProjectName }}_win-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
+      - name: Upload Release Asset Web
+        id: upload-release-asset-web
+        if: ${{ env.ExportWeb }}
+        uses: actions/upload-release-asset@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: export/web/${{ env.GodotProjectName }}_web.zip
+          asset_name: ${{ env.GodotProjectName }}_web-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
