@@ -68,7 +68,7 @@ jobs:
       - name: Upload Release Asset Linux
         id: upload-release-asset-linux
         if: ${{ env.ExportLinux }}
-        uses: actions/upload-release-asset@v4
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -79,7 +79,7 @@ jobs:
       - name: Upload Release Asset Windows
         id: upload-release-asset-win
         if: ${{ env.ExportWindows }}
-        uses: actions/upload-release-asset@v4
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -90,7 +90,7 @@ jobs:
       - name: Upload Release Asset Web
         id: upload-release-asset-web
         if: ${{ env.ExportWeb }}
-        uses: actions/upload-release-asset@v4
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
