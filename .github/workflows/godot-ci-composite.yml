@@ -15,8 +15,8 @@ env:
   ExportWeb: true
 
 jobs:
-  release:
-    name: Create Release
+  windows_release:
+    name: Create Windows Release
     runs-on: ubuntu-latest
     steps:
       - name: Before
@@ -27,6 +27,23 @@ jobs:
         with:
           godot_project_name: 'GodotProject'
           godot_build_config: 'WindowsDesktop'
+          upload_release: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: After
+        run: |
+          echo "After Run"
+  linux_release:
+    name: Create Linux Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Before
+        run: |
+          echo "Before Run"
+      - name: Build for
+        uses: bbrieber/godot_build_release@main
+        with:
+          godot_project_name: 'GodotProject'
+          godot_build_config: 'Linux'
           upload_release: false
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: After
