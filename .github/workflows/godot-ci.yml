@@ -22,19 +22,19 @@ jobs:
       - name: Build for Windows
         id: build_win
         if: ${{ env.ExportWindows }}
-        uses: bbrieber/godot_ci_image@dcf2a5fba3a5f0b04f36927b9c178d779574662f
+        uses: bbrieber/godot_ci_image@db6a99b04e1c60617cf81d9ea50a733721737abe
         with:
           build-config: 'WindowsDesktop'
       - name: Build for Linux
         id: build_linux
         if: ${{ env.ExportLinux }}
-        uses: bbrieber/godot_ci_image@dcf2a5fba3a5f0b04f36927b9c178d779574662f
+        uses: bbrieber/godot_ci_image@db6a99b04e1c60617cf81d9ea50a733721737abe
         with:
           build-config: 'Linux'
       - name: Build for Web
         id: build_web
         if: ${{ env.ExportWeb }}
-        uses: bbrieber/godot_ci_image@dcf2a5fba3a5f0b04f36927b9c178d779574662f
+        uses: bbrieber/godot_ci_image@db6a99b04e1c60617cf81d9ea50a733721737abe
         with:
           build-config: 'Web'
       - name: Zip Linux Folder
